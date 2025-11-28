@@ -85,6 +85,12 @@ async def extract_bill_data(request: DocumentRequest):
                 token_usage=result["token_usage"]
             )
             
+        # Remove "suspicious" (extra field not required in hackathon schema)
+        for page in extracted_data.get("pagewise_line_items", []):
+            for item in page.get("bill_items", []):
+                if "suspicious" in item:
+                    del item["suspicious"]
+        
         # Count total items
         total_items = calculate_total_items(extracted_data)
         extracted_data["total_item_count"] = total_items

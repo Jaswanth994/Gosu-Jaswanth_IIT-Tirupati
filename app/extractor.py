@@ -87,8 +87,7 @@ Return ONLY this JSON:
           "item_name": "Consultation Charge",
           "item_amount": 500.00,
           "item_rate": 500.00,
-          "item_quantity": 1.0,
-          "suspicious": false
+          "item_quantity": 1.0
         }
       ]
     }
