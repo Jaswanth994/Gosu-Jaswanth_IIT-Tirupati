@@ -27,7 +27,7 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Add CORS middleware
+# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -36,6 +36,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Load Gemini API key
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if not GEMINI_API_KEY:
     raise ValueError("GEMINI_API_KEY environment variable missing")
@@ -45,7 +46,6 @@ extractor = BillExtractor(api_key=GEMINI_API_KEY)
 
 @app.get("/")
 async def root():
-    """Health check endpoint"""
     return {
         "status": "ok",
         "message": "Medical Bill Extraction API is running",
@@ -55,15 +55,6 @@ async def root():
 
 @app.post("/extract-bill-data", response_model=APIResponse)
 async def extract_bill_data(request: DocumentRequest):
-    """
-    Extract bill line items from a document URL
-    
-    Args:
-        request: DocumentRequest containing the document URL
-        
-    Returns:
-        APIResponse with extracted bill data or error message
-    """
     try:
         # Step 1: Download the document
         try:
@@ -74,7 +65,7 @@ async def extract_bill_data(request: DocumentRequest):
                 message=f"Failed to download document: {str(e)}"
             )
         
-        # Step 2: Extract data using Claude
+        # Step 2: Extract using Gemini Vision
         result = extractor.extract_from_image(image_data, media_type)
         
         if not result["success"]:
@@ -84,7 +75,7 @@ async def extract_bill_data(request: DocumentRequest):
                 token_usage=result["token_usage"]
             )
         
-        # Step 3: Validate and structure the response
+        # Step 3: Validate & structure
         extracted_data = result["data"]
         
         if not validate_extraction_result(extracted_data):
@@ -94,11 +85,9 @@ async def extract_bill_data(request: DocumentRequest):
                 token_usage=result["token_usage"]
             )
         
-        # Calculate total item count
         total_items = calculate_total_items(extracted_data)
         extracted_data["total_item_count"] = total_items
         
-        # Step 4: Return successful response
         return APIResponse(
             is_success=True,
             token_usage=result["token_usage"],
@@ -106,7 +95,6 @@ async def extract_bill_data(request: DocumentRequest):
         )
         
     except Exception as e:
-        # Handle unexpected errors
         return APIResponse(
             is_success=False,
             message=f"Internal server error: {str(e)}"
@@ -115,15 +103,15 @@ async def extract_bill_data(request: DocumentRequest):
 
 @app.get("/health")
 async def health_check():
-    """Detailed health check"""
     return {
         "status": "healthy",
         "api_key_configured": bool(GEMINI_API_KEY),
-        "model": "claude-sonnet-4-20250514"
+        "model": "gemini-pro-vision"
     }
 
 
+# Uvicorn entrypoint (required for Render)
 if __name__ == "__main__":
     import uvicorn
     port = int(os.getenv("PORT", 8000))
-    uvicorn.run("app.main:app", host="0.0.0.0", port=port, reload=False)
+    uvicorn.run("app.main:app", host="0.0.0.0", port=port)
