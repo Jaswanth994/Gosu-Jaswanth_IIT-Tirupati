@@ -84,10 +84,16 @@ async def extract_bill_data(request: DocumentRequest):
                 message="Extraction result validation failed",
                 token_usage=result["token_usage"]
             )
-        
+            
+        # Count total items
         total_items = calculate_total_items(extracted_data)
         extracted_data["total_item_count"] = total_items
-        
+
+        # Compute reconciled amount (sum of item_amount values)
+        from .utils import calculate_reconciled_amount
+        extracted_data["reconciled_amount"] = calculate_reconciled_amount(extracted_data)
+
+                
         return APIResponse(
             is_success=True,
             token_usage=result["token_usage"],

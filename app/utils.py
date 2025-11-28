@@ -86,3 +86,18 @@ def detect_duplicates(items: list) -> list:
             seen[signature] = idx
     
     return duplicates
+
+def calculate_reconciled_amount(extracted_data: dict) -> float:
+    """
+    Sum all item_amount values across all pages and return final total.
+    """
+    total = 0.0
+
+    for page in extracted_data.get("pagewise_line_items", []):
+        for item in page.get("bill_items", []):
+            try:
+                total += float(item.get("item_amount", 0))
+            except:
+                pass  # ignore malformed amounts
+
+    return round(total, 2)

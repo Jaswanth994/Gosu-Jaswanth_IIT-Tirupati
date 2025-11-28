@@ -29,6 +29,7 @@ class TokenUsage(BaseModel):
 class ExtractionData(BaseModel):
     pagewise_line_items: List[PagewiseLineItem] = Field(default_factory=list)
     total_item_count: int = 0
+    reconciled_amount: float = 0.0
 
 
 class APIResponse(BaseModel):
