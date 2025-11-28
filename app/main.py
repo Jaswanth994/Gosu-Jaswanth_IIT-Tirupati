@@ -36,12 +36,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize extractor
-ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
-if not ANTHROPIC_API_KEY:
-    raise ValueError("ANTHROPIC_API_KEY environment variable is required")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+if not GEMINI_API_KEY:
+    raise ValueError("GEMINI_API_KEY environment variable missing")
 
-extractor = BillExtractor(api_key=ANTHROPIC_API_KEY)
+extractor = BillExtractor(api_key=GEMINI_API_KEY)
 
 
 @app.get("/")
@@ -119,7 +118,7 @@ async def health_check():
     """Detailed health check"""
     return {
         "status": "healthy",
-        "api_key_configured": bool(ANTHROPIC_API_KEY),
+        "api_key_configured": bool(GEMINI_API_KEY),
         "model": "claude-sonnet-4-20250514"
     }
 
